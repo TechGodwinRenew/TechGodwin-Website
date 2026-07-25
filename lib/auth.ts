@@ -3,7 +3,15 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+// Lazy-load Prisma client to avoid issues during build
+let prisma: PrismaClient | null = null;
+
+function getPrismaClient() {
+  if (!prisma) {
+    prisma = new PrismaClient();
+  }
+  return prisma;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,7 +24,8 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.adminUser.findUnique({
+        const prismaClient = getPrismaClient();
+        const user = await prismaClient.adminUser.findUnique({
           where: { email: credentials.email },
         });
 
