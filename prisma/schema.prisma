@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Admin Users (CMS)
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // bcrypt hashed
+  role      String   @default("editor") // admin, editor
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+// Blog Posts
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  content     String   @db.Text
+  category    String   @default("General")
+  difficulty  String   @default("intermediate") // beginner, intermediate, advanced
+  author      String   @default("TechGodwin")
+  tags        String   @default("") // comma-separated
+  featured    Boolean  @default(false)
+  published   Boolean  @default(false)
+  readingTime Int      @default(5) // minutes
+  thumbnail   String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+
+  @@index([published])
+  @@index([category])
+  @@index([featured])
+}
+
+// Newsletter Subscribers
+model NewsletterSubscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+
+  @@index([email])
+}
+
+// Upcoming Classes/Courses
+model UpcomingClass {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  category    String
+  
+  startDate   DateTime
+  endDate     DateTime
+  duration    Int      // in hours
+  
+  instructor  String?
+  location    String?
+  capacity    Int      @default(30)
+  
+  price       Float    @default(0) // 0 = free
+  isPaid      Boolean  @default(false)
+  
+  published   Boolean  @default(false)
+  registrations CourseRegistration[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+  @@index([startDate])
+}
+
+// Course Registrations
+model CourseRegistration {
+  id          String   @id @default(cuid())
+  
+  classId     String
+  class       UpcomingClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  
+  status      String   @default("pending") // pending, confirmed, cancelled, completed
+  paymentStatus String  @default("unpaid")  // unpaid, paid, refunded
+  
+  registeredAt DateTime @default(now())
+  confirmedAt DateTime?
+  
+  notes       String?
+  
+  @@index([classId])
+  @@index([email])
+  @@index([status])
+}
+
+// Payments (Future - Ready but inactive)
+model Payment {
+  id          String   @id @default(cuid())
+  
+  registrationId String?
+  
+  amount      Float
+  currency    String   @default("USD")
+  status      String   @default("pending") // pending, completed, failed, refunded
+  
+  paymentMethod String? // stripe, paypal, other
+  transactionId String?
+  
+  metadata    String?  // JSON for additional info
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([transactionId])
+}
+
+// Payment Methods (Future - For storing payment provider config)
+model PaymentMethod {
+  id          String   @id @default(cuid())
+  
+  provider    String   // stripe, paypal
+  isActive    Boolean  @default(false)
+  
+  config      String   @db.Text // JSON config
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([provider])
+}

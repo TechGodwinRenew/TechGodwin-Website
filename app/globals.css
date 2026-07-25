@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-sans;
+}
+
+a {
+  @apply transition-colors;
+}
+
+button {
+  @apply transition-all duration-200;
+}
+
+.prose {
+  @apply max-w-none;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed text-gray-700;
+}
+
+.prose h1 {
+  @apply text-4xl font-bold mb-6 text-gray-900;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold mb-4 mt-8 text-gray-900;
+}
+
+.prose h3 {
+  @apply text-xl font-bold mb-3 text-gray-800;
+}
+
+.prose code {
+  @apply bg-gray-100 px-2 py-1 rounded font-mono text-sm;
+}
+
+.prose pre {
+  @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-auto mb-4;
+}
+
+/* Smooth transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
