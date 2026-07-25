@@ -1,25 +1,22 @@
 import { withAuth } from 'next-auth/middleware';
-import { NextResponse } from 'next/server';
 
 export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
-    const path = req.nextUrl.pathname;
-
-    // Admin-only routes require admin role
-    if (path.startsWith('/admin') && !path.startsWith('/admin/login')) {
-      if (!token) {
-        return NextResponse.redirect(new URL('/admin/login', req.url));
-      }
-    }
-    return NextResponse.next();
+  function middleware() {
+    // Middleware executed if authorized
+    return undefined;
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
-        if (path.startsWith('/admin/login')) return true;
+        
+        // Allow login page
+        if (path === '/admin/login') return true;
+        
+        // Require token for all other admin routes
         if (path.startsWith('/admin')) return !!token;
+        
+        // Allow public routes
         return true;
       },
     },
